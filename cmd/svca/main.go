@@ -35,6 +35,7 @@ func installOtlpPipeline(ctx context.Context) (func(), error) {
 		resource.WithAttributes(
 			// the service name used to display traces in backends
 			semconv.ServiceNameKey.String("service-a"),
+			label.String("app", "svca"),
 		),
 	)
 	if err != nil {
@@ -94,23 +95,23 @@ func main() {
 			u := "http://svcb.default.svc"
 			req, err := http.NewRequestWithContext(ctx, "GET", u, nil)
 			if err != nil {
-				log.Println(err)
+				log.Printf("traceid=%s err=%q", span.SpanContext().TraceID, err.Error())
 				return
 			}
 			res, err := client.Do(req)
 			if err != nil {
-				log.Println(err)
+				log.Printf("traceid=%s err=%q", span.SpanContext().TraceID, err.Error())
 				return
 			} else if res.StatusCode != 200 {
-				log.Println(res.Status)
+				log.Printf("traceid=%s status=%q", span.SpanContext().TraceID, res.Status)
 				return
 			}
 			defer res.Body.Close()
 			b, err := io.ReadAll(res.Body)
 			if err != nil {
-				log.Println(err)
+				log.Printf("traceid=%s err=%q", span.SpanContext().TraceID, err.Error())
 			}
-			log.Println(string(b))
+			log.Printf("traceid=%s msg=%s", span.SpanContext().TraceID, string(b))
 		}()
 	}
 }

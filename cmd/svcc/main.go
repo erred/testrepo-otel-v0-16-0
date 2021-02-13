@@ -10,6 +10,7 @@ import (
 	"go.opentelemetry.io/otel"
 	"go.opentelemetry.io/otel/exporters/otlp"
 	"go.opentelemetry.io/otel/exporters/otlp/otlpgrpc"
+	"go.opentelemetry.io/otel/label"
 	"go.opentelemetry.io/otel/propagation"
 	"go.opentelemetry.io/otel/sdk/resource"
 	sdktrace "go.opentelemetry.io/otel/sdk/trace"
@@ -30,6 +31,7 @@ func installOtlpPipeline(ctx context.Context) (func(), error) {
 		resource.WithAttributes(
 			// the service name used to display traces in backends
 			semconv.ServiceNameKey.String("service-c"),
+			label.String("app", "svcc"),
 		),
 	)
 	if err != nil {
@@ -76,7 +78,12 @@ func main() {
 		_, span := tracer.Start(r.Context(), "pong")
 		defer span.End()
 
-		w.Write([]byte("pog"))
+		n, err := w.Write([]byte("pog"))
+		if err != nil {
+			log.Printf("traceid=%s err=%q", span.SpanContext().TraceID, err.Error())
+			return
+		}
+		log.Printf("traceid=%s bytes=%d", span.SpanContext().TraceID, n)
 	})
 
 	http.ListenAndServe(":8080", otelhttp.NewHandler(http.DefaultServeMux, "inject"))

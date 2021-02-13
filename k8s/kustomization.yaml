@@ -4,4 +4,7 @@ resources:
   - default
   - otel
   - jaeger
+  - grafana
+  - promtail
   - namespace.k8s.yaml
+  - loki

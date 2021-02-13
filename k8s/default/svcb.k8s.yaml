@@ -1,0 +1,57 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app.kubernetes.io/name: svcb
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: 0.0.0
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/part-of: testrepo-otel
+  name: svcb
+spec:
+  type: ClusterIP
+  ports:
+    - port: 80
+      targetPort: 8080
+  selector:
+    app.kubernetes.io/name: svcb
+    app.kubernetes.io/instance: default
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: svcb
+  labels:
+    app.kubernetes.io/name: svcb
+    app.kubernetes.io/instance: default
+    app.kubernetes.io/version: 0.0.0
+    app.kubernetes.io/managed-by: kustomize
+    app.kubernetes.io/part-of: testrepo-otel
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app.kubernetes.io/name: svcb
+      app.kubernetes.io/instance: default
+      app.kubernetes.io/part-of: testrepo-otel
+  template:
+    metadata:
+      labels:
+        app.kubernetes.io/name: svcb
+        app.kubernetes.io/instance: default
+        app.kubernetes.io/version: 0.0.0
+        app.kubernetes.io/managed-by: kustomize
+        app.kubernetes.io/part-of: testrepo-otel
+      annotations:
+        prometheus.io/scrape: "true"
+        prometheus.io/path: "/metrics"
+        prometheus.io/port: "8080"
+    spec:
+      containers:
+        - name: svcb
+          image: index.docker.io/seankhliao/testrepo-otel:latest
+          imagePullPolicy: IfNotPresent
+          command:
+            - /bin/svcb
+          ports:
+            - containerPort: 8080
